@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\arrowButton.png" />
+    <None Remove="Assets\background.png" />
+    <None Remove="Assets\buttonBlock.png" />
+    <None Remove="Assets\CheckBoxCard.png" />
+    <None Remove="Assets\ClipboardButton.png" />
+    <None Remove="Assets\colorInputBg.png" />
+    <None Remove="Assets\FileButton.png" />
+    <None Remove="Assets\LinkButton.png" />
+    <None Remove="Assets\lock.png" />
+    <None Remove="Assets\Micra.ttf" />
+    <None Remove="Assets\onTopButton.png" />
+    <None Remove="Assets\onTopButtonSelected.png" />
+    <None Remove="Assets\previewImageFrame.png" />
+    <None Remove="Assets\radioButtonsBG.png" />
+    <None Remove="Assets\selectButton.png" />
+    <None Remove="Assets\settingsButton.png" />
+    <None Remove="Assets\slidersBG.png" />
+    <None Remove="Assets\sliderThumb.png" />
+    <None Remove="Assets\startButton.png" />
+    <None Remove="Assets\template.png" />
+    <None Remove="favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AForge.Imaging" Version="2.2.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\arrowButton.png" />
+    <Resource Include="Assets\background.png" />
+    <Resource Include="Assets\buttonBlock.png" />
+    <Resource Include="Assets\CheckBoxCard.png" />
+    <Resource Include="Assets\ClipboardButton.png" />
+    <Resource Include="Assets\colorInputBg.png" />
+    <Resource Include="Assets\FileButton.png" />
+    <Resource Include="Assets\LinkButton.png" />
+    <Resource Include="Assets\lock.png" />
+    <Resource Include="Assets\Micra.ttf" />
+    <Resource Include="Assets\onTopButton.png" />
+    <Resource Include="Assets\onTopButtonSelected.png" />
+    <Resource Include="Assets\previewImageFrame.png" />
+    <Resource Include="Assets\radioButtonsBG.png" />
+    <Resource Include="Assets\selectButton.png" />
+    <Resource Include="Assets\settingsButton.png" />
+    <Resource Include="Assets\slidersBG.png" />
+    <Resource Include="Assets\sliderThumb.png" />
+    <Resource Include="Assets\startButton.png" />
+    <Resource Include="Assets\template.png" />
+    <Resource Include="favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+﻿<Window x:Class="GarticBot.DrawingRectSelector"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GarticBot"
+        AllowsTransparency="True"
+        mc:Ignorable="d" Height="450" Width="800" Background="#65000000" WindowStartupLocation="Manual" Topmost="True" ResizeMode="CanResize" WindowStyle="None" MouseDown="Window_MouseDown">
+    <WindowChrome.WindowChrome>
+        <WindowChrome 
+        CaptionHeight="0"
+        ResizeBorderThickness="5" />
+    </WindowChrome.WindowChrome>
+    <Border BorderBrush="#90FFFFFF" BorderThickness="1">
+        
+    </Border>
+</Window>

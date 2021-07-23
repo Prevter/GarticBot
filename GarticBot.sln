@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31423.177
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarticBot", "GarticBot.csproj", "{16C22774-C4EA-4AC8-BFE7-CE352EB277F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarticBot", "GarticBot\GarticBot.csproj", "{F3E7020C-2063-4B92-8C80-3A6D5A503493}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{16C22774-C4EA-4AC8-BFE7-CE352EB277F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16C22774-C4EA-4AC8-BFE7-CE352EB277F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16C22774-C4EA-4AC8-BFE7-CE352EB277F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16C22774-C4EA-4AC8-BFE7-CE352EB277F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3E7020C-2063-4B92-8C80-3A6D5A503493}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3E7020C-2063-4B92-8C80-3A6D5A503493}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3E7020C-2063-4B92-8C80-3A6D5A503493}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3E7020C-2063-4B92-8C80-3A6D5A503493}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0E362F01-E174-4F33-8E79-3D7C6F2714DF}
+		SolutionGuid = {8650387F-D209-4C5B-96B8-24023D7CB575}
 	EndGlobalSection
 EndGlobal

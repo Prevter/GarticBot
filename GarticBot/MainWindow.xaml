@@ -1,0 +1,148 @@
+﻿<Window x:Class="GarticBot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GarticBot"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        Title="GarticBot" Height="600" Width="390" WindowStartupLocation="CenterScreen" Icon="/favicon.ico">
+    <Window.Resources>
+        <Style x:Key="MyButton" TargetType="Button">
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.8" />
+                            </Trigger>
+                            <Trigger Property="IsMouseCaptured" Value="True">
+                                <Setter Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Window.Background>
+        <ImageBrush ImageSource="/Assets/background.png"/>
+    </Window.Background>
+
+
+    <Grid>
+        <TextBox x:Name="imageUrlTextBox" Style="{DynamicResource RoundedTextBox}" Margin="10,12,10,0" TextWrapping="Wrap" FontFamily="Microsoft Himalaya" FontWeight="Normal" FontStyle="Normal" FontSize="33" BorderBrush="Gray" Height="32" VerticalAlignment="Top" Foreground="#FF333333" Tag="Введите URL картинки..."/>
+        <Button Content="" Style="{StaticResource MyButton}" HorizontalAlignment="Left" Margin="12,56,0,0" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="{x:Null}" Click="DownloadImageFromURLButton">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/LinkButton.png"/>
+            </Button.Background>
+        </Button>
+        <Button Content="" Style="{StaticResource MyButton}" HorizontalAlignment="Left" Margin="52,56,0,0" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="{x:Null}" Click="GetImageFromFIleButton">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/FileButton.png"/>
+            </Button.Background>
+        </Button>
+        <Button Content="" Style="{StaticResource MyButton}" HorizontalAlignment="Left" Margin="91,56,0,0" VerticalAlignment="Top" Height="32" Width="32" BorderBrush="{x:Null}" Click="GetImageFromClipboardButton">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/ClipboardButton.png"/>
+            </Button.Background>
+        </Button>
+        <Button Content="Поверх   " Style="{StaticResource MyButton}" Margin="129,57,10,0" VerticalAlignment="Top" Height="31" BorderBrush="{x:Null}" Padding="1,1,1,1" FontFamily="Micra" FontSize="20" Click="OnTopButton_Click" x:Name="OnTopButton">
+            <Button.Background>
+                <ImageBrush x:Name="onTopImageBrush" ImageSource="/Assets/onTopButton.png"/>
+            </Button.Background>
+        </Button>
+        <Button Content="Настройки   " Style="{StaticResource MyButton}" Margin="130,102,10,0" VerticalAlignment="Top" Height="30" BorderBrush="{x:Null}" Padding="1,1,1,1" FontFamily="Micra" FontSize="20" Foreground="#FF333333" Click="SettingsButton_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/settingsButton.png"/>
+            </Button.Background>
+        </Button>
+        <Button Content="Поле для рисования    " Style="{StaticResource MyButton}" Margin="130,142,10,0" VerticalAlignment="Top" Height="30" BorderBrush="{x:Null}" Padding="1,1,1,1" FontFamily="Micra" Foreground="#FF333333" Click="DrawRectSelectButton_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/selectButton.png"/>
+            </Button.Background>
+        </Button>
+        <Image HorizontalAlignment="Left" Height="30" Margin="12,102,0,0" VerticalAlignment="Top" Width="112" Source="/Assets/CheckBoxCard.png" Stretch="Fill"/>
+        <Image HorizontalAlignment="Left" Height="30" Margin="12,142,0,0" VerticalAlignment="Top" Width="112" Source="/Assets/CheckBoxCard.png" Stretch="Fill"/>
+        <TextBlock HorizontalAlignment="Left" Margin="45,111,0,0" TextWrapping="Wrap" Text="ЧЁРНО-БЕЛЫЙ" VerticalAlignment="Top" Height="13" Width="115" FontFamily="Myriad Pro" LineStackingStrategy="MaxHeight" TextAlignment="Left" LineHeight="1"/>
+        <TextBlock HorizontalAlignment="Left" Margin="45,151,0,0" TextWrapping="Wrap" Text="ПРЯМОУГ.РИС." VerticalAlignment="Top" Height="13" Width="120" FontFamily="Myriad Pro" LineStackingStrategy="MaxHeight" TextAlignment="Left" LineHeight="1"/>
+        <CheckBox x:Name="GrayScaleCheckbox" Content="" VerticalAlignment="Top" Height="14" Style="{DynamicResource RoundedCheckbox}" Margin="38,110,0,0" RenderTransformOrigin="0.5,0.5" BorderBrush="#FF4D4D4D" Padding="0,0,0,0" HorizontalAlignment="Left" Width="57" Background="White" Checked="GrayScaleCheckbox_Checked" Unchecked="GrayScaleCheckbox_Checked">
+            <CheckBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1.90" ScaleY="2.05"/>
+                </TransformGroup>
+            </CheckBox.RenderTransform>
+        </CheckBox>
+        <CheckBox x:Name="drawWithRectCheckbox" Content="" VerticalAlignment="Top" Height="14" Style="{DynamicResource RoundedCheckbox}" Margin="38,150,0,0" RenderTransformOrigin="0.5,0.5" BorderBrush="#FF4D4D4D" Padding="0,0,0,0" HorizontalAlignment="Left" Width="57">
+            <CheckBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1.90" ScaleY="2.05"/>
+                </TransformGroup>
+            </CheckBox.RenderTransform>
+        </CheckBox>
+        <Image HorizontalAlignment="Left" Height="41" Margin="12,181,0,0" VerticalAlignment="Top" Width="112" Source="/Assets/radioButtonsBG.png" Stretch="Fill"/>
+        <RadioButton x:Name="SpeedRadio1" Content="" HorizontalAlignment="Left" Margin="17,184,0,0" VerticalAlignment="Top" Height="17" Width="15"/>
+        <RadioButton x:Name="SpeedRadio2" Content="" HorizontalAlignment="Left" Margin="46,184,0,0" VerticalAlignment="Top" Height="17" Width="15"/>
+        <RadioButton x:Name="SpeedRadio3" Content="" HorizontalAlignment="Left" Margin="75,184,0,0" VerticalAlignment="Top" Height="17" Width="15" IsChecked="True"/>
+        <RadioButton x:Name="SpeedRadio4" Content="" HorizontalAlignment="Left" Margin="104,184,0,0" VerticalAlignment="Top" Height="17" Width="15"/>
+        <Label Content="1" HorizontalAlignment="Left" Margin="14,195,0,0" VerticalAlignment="Top" Height="27" Width="20" FontFamily="Myriad Pro" FontWeight="Bold" FontStyle="Italic" FontSize="18" Foreground="#FF333333"/>
+        <Label Content="2" HorizontalAlignment="Left" Margin="43,195,0,0" VerticalAlignment="Top" Height="27" Width="20" FontFamily="Myriad Pro" FontWeight="Bold" FontStyle="Italic" FontSize="18" Foreground="#FF333333"/>
+        <Label Content="3" HorizontalAlignment="Left" Margin="72,195,0,0" VerticalAlignment="Top" Height="27" Width="20" FontFamily="Myriad Pro" FontWeight="Bold" FontStyle="Italic" FontSize="18" Foreground="#FF333333"/>
+        <Label Content="4" HorizontalAlignment="Left" Margin="101,195,0,0" VerticalAlignment="Top" Height="27" Width="20" FontFamily="Myriad Pro" FontWeight="Bold" FontStyle="Italic" FontSize="18" Foreground="#FF333333"/>
+        <Image Height="41" Margin="130,181,10,0" VerticalAlignment="Top" Source="/Assets/slidersBG.png" Stretch="Fill"/>
+        <TextBlock x:Name="SpacingLabel" Margin="0,184,12,0" TextWrapping="Wrap" FontSize="13" Text="пропуск (1)" VerticalAlignment="Top" Height="14" TextAlignment="Center" FontFamily="Myriad Pro" FontWeight="Bold" HorizontalAlignment="Right" Width="100"/>
+        <TextBlock x:Name="ContrastLabel" Margin="0,204,12,0" TextWrapping="Wrap" FontSize="13" Text="контраст (0)" VerticalAlignment="Top" Height="14" TextAlignment="Center" FontFamily="Myriad Pro" FontWeight="Bold" HorizontalAlignment="Right" Width="100"/>
+        <Slider x:Name="SpacingSlider" Style="{DynamicResource CustomSlider}" Margin="134,169,112,0" VerticalAlignment="Top" Height="20" Value="5" TickPlacement="None" SmallChange="1" Maximum="-1" RenderTransformOrigin="0.5,0.5" Minimum="-12" ValueChanged="SpacingSlider_ValueChanged">
+            <Slider.RenderTransform>
+                <TransformGroup>
+                    <RotateTransform Angle="180"/>
+                </TransformGroup>
+            </Slider.RenderTransform>
+        </Slider>
+        <Slider x:Name="ContrastSlider" Style="{DynamicResource CustomSlider}" Margin="134,214,112,0" VerticalAlignment="Top" Height="20" SmallChange="1" Minimum="-100" Maximum="100" TickPlacement="None" ValueChanged="ContrastSlider_ValueChanged"/>
+        <Image HorizontalAlignment="Left" Height="26" Margin="12,229,0,0" VerticalAlignment="Top" Width="194" Source="/Assets/colorInputBg.png" RenderTransformOrigin="0.5,0.5" Stretch="Uniform" />
+        <TextBox Style="{DynamicResource NumericInput}" x:Name="ColorCountInput" PreviewTextInput="NumberValidationTextBox" HorizontalAlignment="Left" Margin="136,230.2,0,0" TextWrapping="Wrap" Text="16" VerticalAlignment="Top" Width="45" Height="23.2" FontSize="20" TextAlignment="Center" FontFamily="Myriad Pro" FontWeight="Bold" Foreground="#FF333333" BorderBrush="{x:Null}" TextChanged="ColorCountInput_TextChanged"/>
+        <TextBlock HorizontalAlignment="Left" Margin="20,231,0,0" TextWrapping="Wrap" Text="цвета" VerticalAlignment="Top" Height="21" Width="116" Foreground="#FF333333" FontFamily="Myriad Pro" FontWeight="Bold" FontSize="19" TextAlignment="Left"/>
+        <Button x:Name="colorsIncreaseButton" HorizontalAlignment="Left" Margin="182,232,0,0" VerticalAlignment="Top" Height="9" Width="22" Style="{DynamicResource MyButton}" Click="colorsChangeButton_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/arrowButton.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+        <Button x:Name="colorsDecreaseButton" HorizontalAlignment="Left" Margin="182,243,0,0" VerticalAlignment="Top" Height="9" Width="22" Style="{DynamicResource MyButton}" RenderTransformOrigin="0.5,0.5" Click="colorsChangeButton_Click">
+            <Button.RenderTransform>
+                <TransformGroup>
+                    <RotateTransform Angle="180"/>
+                </TransformGroup>
+            </Button.RenderTransform>
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/arrowButton.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+        <ComboBox x:Name="imageSizeCombobox" SelectedIndex="1" Margin="211,229,12,0" BorderBrush="Gray" Foreground="#FF333333" Background="White" FontFamily="Myriad Pro" FontSize="19" FontWeight="Bold" Style="{DynamicResource theComboBox}" Height="26" VerticalAlignment="Top" SelectionChanged="imageSizeCombobox_SelectionChanged" >
+            <ComboBoxItem Content="обычный"/>
+            <ComboBoxItem Content="вписать"/>
+            <ComboBoxItem Content="растянуть"/>
+            <ComboBoxItem Content="по-центру"/>
+        </ComboBox>
+
+        <Image x:Name="previewImage" Margin="14,0,14,80" Stretch="Uniform" Height="210" VerticalAlignment="Bottom"/>
+        <Image Source="/Assets/previewImageFrame.png" Margin="12,0,12,68" Height="242" VerticalAlignment="Bottom"/>
+        <TextBlock Margin="37,0,275,288" TextWrapping="Wrap" Text="предпросмотр" FontFamily="Myriad Pro" FontSize="8.5" TextAlignment="Center" FontWeight="Bold" Foreground="White" Height="11" VerticalAlignment="Bottom">
+            <TextBlock.Effect>
+                <DropShadowEffect BlurRadius="1" ShadowDepth="1"/>
+            </TextBlock.Effect>
+        </TextBlock>
+        <Button Margin="12,0,12,22" VerticalAlignment="Bottom" Height="41" Style="{DynamicResource MyButton}" Click="StartButton_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/Assets/startButton.png"/>
+            </Button.Background>
+        </Button>
+        <ProgressBar x:Name="workProgressBar" Margin="13,0,13,76" BorderBrush="{x:Null}" Value="50" Height="8" VerticalAlignment="Bottom"/>
+        <TextBlock x:Name="errorLabel" TextWrapping="Wrap" Foreground="White" FontFamily="Myriad Pro" FontSize="14" FontWeight="Normal" TextAlignment="Center" Height="17" VerticalAlignment="Bottom"/>
+    </Grid>
+</Window>
