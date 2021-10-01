@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
@@ -55,10 +56,14 @@ namespace GarticBot
         /// </summary>
         /// <param name="speed">Speed level</param>
         /// <returns>Time to sleep</returns>
-        public static int convertSpeed(int speed)
+        public static int ConvertSpeed(int speed)
         {
             if (speed == 1)
                 return 100;
+            if (speed == 2)
+                return 30;
+            if (speed == 3)
+                return 6;
             return 2;
         }
 
@@ -137,6 +142,35 @@ namespace GarticBot
                                 Image.Width, Image.Height),
                                 ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             byte[] pixelBuffer = new byte[sourceData.Stride * sourceData.Height];
+            byte[] grayscaleBuffer = new byte[sourceData.Stride * sourceData.Height];
+            Marshal.Copy(sourceData.Scan0, pixelBuffer, 0, pixelBuffer.Length);
+            pixelBuffer.CopyTo(grayscaleBuffer, 0);
+            Image.UnlockBits(sourceData);
+
+
+            int[] workers = new int[1] { pixelBuffer.Length / 4 };
+            float[] contrastArg = new float[1] { (float)Math.Pow((100.0 + Value) / 100.0, 2) };
+            OpenCLTemplate.CLCalc.Program.Variable pixelsIn = new OpenCLTemplate.CLCalc.Program.Variable(pixelBuffer);
+            OpenCLTemplate.CLCalc.Program.Variable pixelsOut = new OpenCLTemplate.CLCalc.Program.Variable(grayscaleBuffer);
+            OpenCLTemplate.CLCalc.Program.Variable param = new OpenCLTemplate.CLCalc.Program.Variable(contrastArg);
+            OpenCLTemplate.CLCalc.Program.Variable[] args = new OpenCLTemplate.CLCalc.Program.Variable[] { pixelsIn, param, pixelsOut };
+
+            ContrastKernel.Execute(args, workers);
+            pixelsOut.ReadFromDeviceTo(grayscaleBuffer);
+
+            Bitmap resultBitmap = new Bitmap(Image.Width, Image.Height);
+            BitmapData resultData = resultBitmap.LockBits(new Rectangle(0, 0,
+                                        resultBitmap.Width, resultBitmap.Height),
+                                        ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            Marshal.Copy(grayscaleBuffer, 0, resultData.Scan0, pixelBuffer.Length);
+            resultBitmap.UnlockBits(resultData);
+
+            return resultBitmap;
+
+            /*BitmapData sourceData = Image.LockBits(new Rectangle(0, 0,
+                                Image.Width, Image.Height),
+                                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            byte[] pixelBuffer = new byte[sourceData.Stride * sourceData.Height];
             Marshal.Copy(sourceData.Scan0, pixelBuffer, 0, pixelBuffer.Length);
             Image.UnlockBits(sourceData);
             double contrastLevel = Math.Pow((100.0 + Value) / 100.0, 2);
@@ -175,7 +209,7 @@ namespace GarticBot
                                         ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
             Marshal.Copy(pixelBuffer, 0, resultData.Scan0, pixelBuffer.Length);
             resultBitmap.UnlockBits(resultData);
-            return resultBitmap;
+            return resultBitmap;*/
         }
 
         /// <summary>
@@ -206,21 +240,52 @@ namespace GarticBot
         }
 
         /// <summary>
-        /// Converts image to grayscale
+        /// Converts image to grayscale. Uses OpenCL
         /// </summary>
         /// <param name="Bmp">Bitmap which would be made grayscale</param>
-        public static void ToGrayScale(Bitmap Bmp)
+        public static Bitmap ToGrayScale(Bitmap Bmp)
         {
+            BitmapData sourceData = Bmp.LockBits(new Rectangle(0, 0,
+                                Bmp.Width, Bmp.Height),
+                                ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            byte[] pixelBuffer = new byte[sourceData.Stride * sourceData.Height];
+            byte[] grayscaleBuffer = new byte[sourceData.Stride * sourceData.Height];
+            Marshal.Copy(sourceData.Scan0, pixelBuffer, 0, pixelBuffer.Length);
+            pixelBuffer.CopyTo(grayscaleBuffer, 0);
+            Bmp.UnlockBits(sourceData);
+            
+
+            int[] workers = new int[1] { pixelBuffer.Length / 4 };
+            OpenCLTemplate.CLCalc.Program.Variable pixelsIn = new OpenCLTemplate.CLCalc.Program.Variable(pixelBuffer);
+            OpenCLTemplate.CLCalc.Program.Variable pixelsOut = new OpenCLTemplate.CLCalc.Program.Variable(grayscaleBuffer);
+            OpenCLTemplate.CLCalc.Program.Variable[] args = new OpenCLTemplate.CLCalc.Program.Variable[] { pixelsIn, pixelsOut };
+
+            GrayscaleKernel.Execute(args, workers);
+            pixelsOut.ReadFromDeviceTo(grayscaleBuffer);
+
+            Bitmap resultBitmap = new Bitmap(Bmp.Width, Bmp.Height);
+            BitmapData resultData = resultBitmap.LockBits(new Rectangle(0, 0,
+                                        resultBitmap.Width, resultBitmap.Height),
+                                        ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+            Marshal.Copy(grayscaleBuffer, 0, resultData.Scan0, pixelBuffer.Length);
+            resultBitmap.UnlockBits(resultData);
+
+            return resultBitmap;
+
+            /*
+            // CPU Code
             int rgb;
             Color c;
-
             for (int y = 0; y < Bmp.Height; y++)
+            {
                 for (int x = 0; x < Bmp.Width; x++)
                 {
                     c = Bmp.GetPixel(x, y);
                     rgb = (int)Math.Round(.299 * c.R + .587 * c.G + .114 * c.B);
                     Bmp.SetPixel(x, y, Color.FromArgb(rgb, rgb, rgb));
                 }
+            }
+            */
         }
 
         /// <summary>
@@ -292,7 +357,7 @@ namespace GarticBot
             return thumbnail;
         }
 
-        public static KeyValuePair<Dictionary<Color, List<Rectangle>>, int> extractLinesToDraw(Bitmap image, bool vertically, int pixelInterval, int x, int y)
+        public static KeyValuePair<Dictionary<Color, List<Rectangle>>, int> ExtractLinesToDraw(Bitmap image, bool vertically, int pixelInterval, int x, int y)
         {
             int bound1, bound2;
 
@@ -353,10 +418,10 @@ namespace GarticBot
             return new KeyValuePair<Dictionary<Color, List<Rectangle>>, int>(lines, nbLinesToDraw);
         }
 
-        public static Dictionary<Color, List<Rectangle>> extractPixelLinesToDraw(Bitmap picture, int pixelInterval, int x, int y)
+        public static Dictionary<Color, List<Rectangle>> ExtractPixelLinesToDraw(Bitmap picture, int pixelInterval, int x, int y)
         {
-            var vert = extractLinesToDraw(picture, true, pixelInterval, x, y);
-            var hori = extractLinesToDraw(picture, false, pixelInterval, x, y);
+            var vert = ExtractLinesToDraw(picture, true, pixelInterval, x, y);
+            var hori = ExtractLinesToDraw(picture, false, pixelInterval, x, y);
             if (hori.Value <= vert.Value)
                 return hori.Key;
             return vert.Key;
@@ -374,6 +439,197 @@ namespace GarticBot
             else
                 return (Keys)KeyInterop.VirtualKeyFromKey(button.Key);
         }
+
+        /// <summary>
+        /// Creates binary image for selected color
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public static bool[,] GetColorBinaryImage(Bitmap image, Color color)
+        {
+            bool[,] data = new bool[image.Width, image.Height];
+            Color c;
+
+            for (int y = 0; y < image.Height; y++)
+            {
+                for (int x = 0; x < image.Width; x++)
+                {
+                    c = image.GetPixel(x, y);
+                    data[x, y] = c == color;
+                }
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Convert binary image to rectangles.
+        /// <see href="https://stackoverflow.com/a/63602343/16349466">From stackoverflow answer</see>
+        /// </summary>
+        /// <param name="map">2D bool array for one color</param>
+        /// <returns>List of rectangles</returns>
+        public static IEnumerable<Rectangle> ReduceMap(bool[,] map)
+        {
+            int width = map.GetLength(0), height = map.GetLength(1);
+            MapElement[,] bin = new MapElement[width, height];
+
+            // Reduce
+            // Step 1: Convert to map elements:
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
+                {
+                    if (map[x, y])
+                        bin[x, y] = new MapElement() { X = x, Y = y, Width = 1, Height = 1, Set = true };
+                }
+
+            // Step 2: Process the bin map and generate a collection of Rectangles horizontally     
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Only care about this if we are set.
+                    if (bin[x, y].Set)
+                    {
+                        // Scan forward and link this tile with its following tiles
+                        int xx = 0;
+                        for (int xForward = x + 1; xForward < width; xForward++)
+                        {
+                            if (!bin[xForward, y].Set)
+                                break;
+
+                            // We can link this...
+                            bin[xForward, y].Set = false;
+                            bin[x, y].Width++;
+                            xx++; // Skip over these tiles.
+                        }
+
+                        x += xx;
+                    }
+                }
+            }
+
+            // Step 3: Process the bin map veritically and join any blocks that have equivalent blocks below them.
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Only care about this if we are set.
+                    if (bin[x, y].Set)
+                    {
+                        // Scan down and link this tile with its following tiles
+                        for (int yDown = y + 1; yDown < height; yDown++)
+                        {
+                            if (!bin[x, yDown].Set || bin[x, yDown].Width != bin[x, y].Width)  // We might be able to link this if it's the same size
+                                break;
+
+                            bin[x, yDown].Set = false;
+                            bin[x, y].Height++;
+                        }
+                    }
+                }
+            }
+
+            // Step 4: Convert map to rectangles
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Only care about this if we are set.
+                    if (bin[x, y].Set)
+                    {
+                        var b = bin[x, y];
+                        yield return new Rectangle(b.X, b.Y, b.Width, b.Height);
+                    }
+                }
+            }
+        }
+
+        internal struct MapElement
+        {
+            public int X;
+            public int Y;
+            public int Width;
+            public int Height;
+            public bool Set;
+        }
+
+        public static Dictionary<Color, List<Rectangle>> ExtractRectsToDraw(Bitmap picture, int x, int y)
+        {
+            List<Color> palette = new List<Color>();
+
+            for (int yz = 0; yz < picture.Height; yz++)
+            {
+                for (int xz = 0; xz < picture.Width; xz++)
+                {
+                    Color c = picture.GetPixel(xz, yz);
+                    if (!palette.Contains(c)) palette.Add(c);
+                }
+            }
+
+            
+
+            Dictionary<Color, List<Rectangle>> result = new Dictionary<Color, List<Rectangle>>();
+            for (int i = 0; i < palette.Count; ++i)
+            {
+                Rectangle[] rects = ReduceMap(GetColorBinaryImage(picture, palette[i])).ToArray();
+                for (int j = 0; j < rects.Length; ++j)
+                {
+                    rects[j].X += x;
+                    rects[j].Y += y;
+                }
+
+                result.Add(palette[i], rects.ToList());
+            }
+            return result;
+        }
+
+        public static OpenCLTemplate.CLCalc.Program.Kernel GrayscaleKernel;
+        public static OpenCLTemplate.CLCalc.Program.Kernel ContrastKernel;
+
+        /// <summary>
+        /// Prepare OpenCL kernels for work
+        /// </summary>
+        public static void CompileOpenCLKernels()
+        {
+            string GrayscaleKernelCode = @"
+                __kernel void grayscaleKernel(__global unsigned char * pixelData, __global unsigned char * outputData)
+                {
+                    int i = get_global_id(0) * 4;
+                    unsigned char blue = 0.114 * pixelData[i];
+                    unsigned char green = 0.587 * pixelData[i + 1];
+                    unsigned char red = 0.299 * pixelData[i + 2];
+                    unsigned char gray = red + green + blue;
+                    outputData[i] = gray;
+                    outputData[i + 1] = gray;
+                    outputData[i + 2] = gray;
+                }
+            ";
+
+            string ContrastKernelCode = @"
+                __kernel void contrastKernel(__global unsigned char * pixelData, __global float * contrastLevel, __global unsigned char * outputData)
+                {
+                    int i = get_global_id(0) * 4;
+                    float blue = ((((pixelData[i] / 255.0) - 0.5) * contrastLevel[0]) + 0.5) * 255.0;
+                    float green = ((((pixelData[i + 1] / 255.0) - 0.5) * contrastLevel[0]) + 0.5) * 255.0;
+                    float red = ((((pixelData[i + 2] / 255.0) - 0.5) * contrastLevel[0]) + 0.5) * 255.0;
+                    if (blue > 255) { blue = 255; }
+                    else if (blue < 0) { blue = 0; }
+                    if (green > 255) { green = 255; }
+                    else if (green < 0) { green = 0; }
+                    if (red > 255) { red = 255; }
+                    else if (red < 0) { red = 0; }
+                    outputData[i] = (unsigned char)blue;
+                    outputData[i + 1] = (unsigned char)green;
+                    outputData[i + 2] = (unsigned char)red;
+                }
+            ";
+
+            OpenCLTemplate.CLCalc.InitCL();
+            OpenCLTemplate.CLCalc.Program.Compile(new string[] { GrayscaleKernelCode, ContrastKernelCode });
+            GrayscaleKernel = new OpenCLTemplate.CLCalc.Program.Kernel("grayscaleKernel");
+            ContrastKernel = new OpenCLTemplate.CLCalc.Program.Kernel("contrastKernel");
+        }
+
 
     }
 }

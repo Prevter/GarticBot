@@ -1,11 +1,15 @@
 ﻿using AForge.Imaging.ColorReduction;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -52,6 +56,7 @@ namespace GarticBot
         {
             InitializeComponent();
             UpdateTopmostButton();
+            CompileOpenCLKernels();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -308,19 +313,34 @@ namespace GarticBot
 
         }
 
-        public void drawLine(Rectangle coordinates, int speed, bool drawRect)
+        public void DrawLine(Rectangle coordinates, int speed, bool drawRect)
         {
             SetMousePos(coordinates.Location);
             mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-            int posX = coordinates.X + Math.Abs(coordinates.Width - coordinates.X);
-            int posY = coordinates.Y + Math.Abs(coordinates.Height - coordinates.Y);
+            int posX;
+            int posY;
             if (drawRect)
             {
-                posX++; posY++;
+                posX = coordinates.X + coordinates.Width;
+                posY = coordinates.Y + coordinates.Height;
+                Thread.Sleep(5);
+            }
+            else
+            {
+                posX = coordinates.X + Math.Abs(coordinates.Width - coordinates.X);
+                posY = coordinates.Y + Math.Abs(coordinates.Height - coordinates.Y);
             }
             SetMousePos(new System.Drawing.Point(posX, posY));
-            if (Math.Abs(coordinates.Width - coordinates.X) > 0 || Math.Abs(coordinates.Height - coordinates.Y) > 0) Thread.Sleep(speed);
-            else Thread.Sleep(speed / 2);
+            if (!drawRect)
+            {
+                if (Math.Abs(coordinates.Width - coordinates.X) > 0 || Math.Abs(coordinates.Height - coordinates.Y) > 0) Thread.Sleep(speed);
+                else Thread.Sleep(speed / 2);
+            }
+            else
+            {
+                Thread.Sleep(speed * 2 / 3);
+            }
+            
             mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
         }
 
@@ -352,7 +372,17 @@ namespace GarticBot
 
         public void StartDraw(Bitmap image, Settings settings, int gapSize, int speed, int x, int y, bool rectDraw)
         {
-            var pixelLinesToDraw = extractPixelLinesToDraw(image, gapSize, x, y);
+            Dictionary<Color, List<Rectangle>> pixelLinesToDraw;
+
+            if (!rectDraw)
+            {
+                pixelLinesToDraw = ExtractPixelLinesToDraw(image, gapSize, x, y);
+            }
+            else
+            {
+                pixelLinesToDraw = ExtractRectsToDraw(image, x, y);
+            }
+
             uint done = 0;
             foreach (var line in pixelLinesToDraw)
             {
@@ -365,7 +395,7 @@ namespace GarticBot
                         SelectColor(line.Key, settings);
                         foreach (var j in line.Value)
                         {
-                            drawLine(j, convertSpeed(speed), rectDraw);
+                            DrawLine(j, ConvertSpeed(speed), rectDraw);
 
                             if (!RunThread) { return; }
                             if (SkipColor) break;
@@ -376,10 +406,21 @@ namespace GarticBot
                     done++;
                 }
 
-                if (speed == 1) Thread.Sleep(100);
-                else if (speed == 2) Thread.Sleep(50);
-                else if (speed == 3) Thread.Sleep(25);
-                else if (speed == 4) Thread.Sleep(10);
+                if (!rectDraw)
+                {
+                    if (speed == 1) Thread.Sleep(100);
+                    else if (speed == 2) Thread.Sleep(50);
+                    else if (speed == 3) Thread.Sleep(25);
+                    else if (speed == 4) Thread.Sleep(10);
+                }
+                else
+                {
+                    if (speed == 1) Thread.Sleep(80);
+                    else if (speed == 2) Thread.Sleep(60);
+                    else if (speed == 3) Thread.Sleep(30);
+                    else if (speed == 4) Thread.Sleep(15);
+                }
+                
             }
             if (pixelLinesToDraw.ContainsKey(Color.FromArgb(0, 0, 0)))
             {
@@ -388,7 +429,7 @@ namespace GarticBot
                 SelectColor(Color.Black, settings);
                 foreach (var j in pixelLinesToDraw[Color.FromArgb(0, 0, 0)])
                 {
-                    drawLine(j, convertSpeed(speed), rectDraw);
+                    DrawLine(j, ConvertSpeed(speed), rectDraw);
 
                     if (!RunThread) { return; }
                     if (SkipColor) break;
@@ -396,10 +437,9 @@ namespace GarticBot
                 done++;
 
                 workProgressBar.Dispatcher.Invoke(() => { workProgressBar.Value = 100.0 * ((float)done / pixelLinesToDraw.Count); });
-
             }
-
         }
+
 
         /// <summary>
         /// Writes currentImage with changed originalImage and shows it in preview box
@@ -408,18 +448,27 @@ namespace GarticBot
         {
             if (originalImage != null)
             {
+                bool grayscaleFlag = (bool)GrayScaleCheckbox.IsChecked;
+                string paletteCount = ColorCountInput.Text;
+                int resizeModeFlag = imageSizeCombobox.SelectedIndex;
+                double contrastValue = ContrastSlider.Value;
+
                 currentImage = (Bitmap)originalImage.Clone();
 
-                if ((bool)GrayScaleCheckbox.IsChecked) ToGrayScale(currentImage);
+                Trace.WriteLine("[task] Cloned image.");
+
+                if (grayscaleFlag) currentImage = ToGrayScale(currentImage);
+                Trace.WriteLine("[task] Checked grayscale.");
 
                 ColorImageQuantizer ciq = new ColorImageQuantizer(new MedianCutQuantizer());
-                int colCount = TryParse(ColorCountInput.Text);
+                int colCount = TryParse(paletteCount);
                 if (colCount > 256) colCount = 256;
                 else if (colCount < 2) colCount = 2;
                 currentImage = ciq.ReduceColors(currentImage, colCount);
                 palette = currentImage.Palette.Entries;
+                Trace.WriteLine("[task] Converted palette.");
 
-                switch (imageSizeCombobox.SelectedIndex)
+                switch (resizeModeFlag)
                 {
                     case 0: //Normal
                         if (currentImage.Width > settings.DrawingPlace.Width || currentImage.Height > settings.DrawingPlace.Height)
@@ -443,10 +492,13 @@ namespace GarticBot
                         currentImage = centered;
                         break;
                 }
+                Trace.WriteLine("[task] Resized.");
 
-                currentImage = AdjustContrast(currentImage, ContrastSlider.Value);
+                if (contrastValue != 0) currentImage = AdjustContrast(currentImage, contrastValue);
+                Trace.WriteLine("[task] Adjusted contrast.");
 
-                previewImage.Source = BitmapToBitmapSource(currentImage);
+                previewImage.Dispatcher.Invoke(() => { previewImage.Source = BitmapToBitmapSource(currentImage); });
+                Trace.WriteLine("[task] Set new image.");
             }
         }
     }

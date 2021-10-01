@@ -33,6 +33,9 @@ namespace GarticBot
             closeThreadKey = settings.CloseThreadKeycode;
             skipColorKey = settings.SkipColorKeycode;
 
+            SelectStopButton.Content = ((Keys)closeThreadKey).ToString();
+            SelectSkipButton.Content = ((Keys)skipColorKey).ToString();
+
             openPaletteX.Text = settings.OpenPalette.X.ToString();
             openPaletteY.Text = settings.OpenPalette.Y.ToString();
 
@@ -52,7 +55,7 @@ namespace GarticBot
             var tmp = new Bitmap((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight);
             using (Graphics gfx = Graphics.FromImage(tmp))
             {
-                using (SolidBrush brush = new SolidBrush(Color.Black)) gfx.FillRectangle(brush, 0, 0, tmp.Width, tmp.Height);
+                using (SolidBrush brush = new(Color.Black)) gfx.FillRectangle(brush, 0, 0, tmp.Width, tmp.Height);
                 background = (Bitmap)tmp.Clone();
             }
             DrawMarkers(tmp);
@@ -60,11 +63,11 @@ namespace GarticBot
 
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
-            Regex regex = new Regex("[^0-9]+");
+            Regex regex = new("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
         }
 
-        public Bitmap ClipboardImage()
+        public static Bitmap ClipboardImage()
         {
             Bitmap returnImage = null;
             if (Clipboard.ContainsImage())
@@ -79,27 +82,27 @@ namespace GarticBot
             using (Graphics gfx = Graphics.FromImage(img))
             {
                 #region Open Palette
-                using (SolidBrush brush = new SolidBrush(Color.White))
+                using (SolidBrush brush = new(Color.White))
                     gfx.FillEllipse(brush, TryParse(openPaletteX.Text) - 5, TryParse(openPaletteY.Text) - 5, 10, 10);
                 #endregion
 
                 #region EmptySpace
-                using (SolidBrush brush = new SolidBrush(Color.Black))
+                using (SolidBrush brush = new(Color.Black))
                     gfx.FillEllipse(brush, TryParse(emptySpaceX.Text) - 5, TryParse(emptySpaceY.Text) - 5, 10, 10);
                 #endregion
 
                 #region Red
-                using (SolidBrush brush = new SolidBrush(Color.Red))
+                using (SolidBrush brush = new(Color.Red))
                     gfx.FillEllipse(brush, TryParse(redX.Text) - 5, TryParse(redY.Text) - 5, 10, 10);
                 #endregion
 
                 #region Green
-                using (SolidBrush brush = new SolidBrush(Color.Green))
+                using (SolidBrush brush = new(Color.Green))
                     gfx.FillEllipse(brush, TryParse(greenX.Text) - 5, TryParse(greenY.Text) - 5, 10, 10);
                 #endregion
 
                 #region Blue
-                using (SolidBrush brush = new SolidBrush(Color.Blue))
+                using (SolidBrush brush = new(Color.Blue))
                     gfx.FillEllipse(brush, TryParse(blueX.Text) - 5, TryParse(blueY.Text) - 5, 10, 10);
                 #endregion
             }
