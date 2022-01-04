@@ -6,7 +6,7 @@
 > Обзор интерфейса
 
 ### Этап 1: Установка
-Для использования программы, вам сперва необходимо скачать [архив с последней версией](https://github.com/Prevter/GarticBot/releases/download/v.1.1/GarticBot.zip "архив с последней версией").
+Для использования программы, вам сперва необходимо скачать [архив с последней версией](https://github.com/Prevter/GarticBot/releases/download/v.1.2/GarticBot.zip "архив с последней версией").
 Распакуйте архив и запустите GarticBot.exe.
 При запуске вам может выдать окно с просьбой установить .NET Core. Вы можете загрузить его сами нажав &laquo;Да&raquo;, либо скачать установщик [напрямую с официального сайта](https://download.visualstudio.microsoft.com/download/pr/b6bef7e7-7d36-41fa-a937-119a786bdae3/b8251935ec30137f6d83dab3e6f1f12c/windowsdesktop-runtime-6.0.0-preview.6.21353.1-win-x64.exe "напрямую с официального сайта")
 
