@@ -1,2 +1,3 @@
-GarticBot/bin/**
-GarticBot/obj/**
+.vs/
+bin/
+obj/
