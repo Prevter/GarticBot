@@ -250,7 +250,7 @@ namespace GarticBot
 
 		private void StartButton_Click(object sender, RoutedEventArgs e)
 		{
-			int gap = -(int)SpacingSlider.Value;
+			int gap = (int)SpacingSlider.Value;
 			int speed = GetCurrentSpeed();
 			bool drawRect = (bool)drawWithRectCheckbox.IsChecked;
 			Bitmap img = (Bitmap)currentImage.Clone();
